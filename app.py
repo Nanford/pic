@@ -60,10 +60,11 @@ class Image(db.Model):
 
     def get_url(self):
         if self.filename:
-            return url_for('static', 
-                         filename=f'uploads/{self.filename}', 
-                         _external=True, 
-                         _scheme='https')
+            # 使用自定义URL以确保正确的Content-Type
+            return url_for('serve_image', 
+                          filename=self.filename, 
+                          _external=True, 
+                          _scheme='https')
         return None
 
     def get_thumbnail_url(self):
@@ -107,9 +108,16 @@ def upload_file():
     for file in files:
         if file and allowed_file(file.filename):
             try:
-                # 生成安全的文件名
+                # 安全处理原始文件名
                 original_filename = secure_filename(file.filename)
-                unique_filename = f"{uuid.uuid4().hex}_{original_filename}"
+                
+                # 提取文件扩展名
+                file_ext = os.path.splitext(original_filename)[1].lower()
+                
+                # 生成不含中文的唯一文件名，但保留原始扩展名
+                unique_filename = str(uuid.uuid4()) + file_ext
+                
+                # 保存原始文件信息到数据库，包括扩展名
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
                 
                 # 读取文件内容
@@ -434,6 +442,68 @@ def generate_missing_thumbnails():
         })
     except Exception as e:
         app.logger.error(f"生成缺失缩略图时出错: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# 添加辅助函数
+def get_mime_type(filename):
+    """根据文件扩展名返回正确的MIME类型"""
+    ext = os.path.splitext(filename)[1].lower()
+    mime_types = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.bmp': 'image/bmp'
+    }
+    return mime_types.get(ext, 'application/octet-stream')
+
+# 修改发送文件的路由
+@app.route('/static/uploads/<path:filename>')
+def serve_image(filename):
+    """专门处理图片请求的路由"""
+    mime_type = get_mime_type(filename)
+    response = send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    response.headers['Content-Type'] = mime_type
+    return response
+
+@app.route('/admin/fix_image_urls')
+def fix_image_urls():
+    """修复已有图片的URL问题"""
+    try:
+        fixed = 0
+        all_images = Image.query.all()
+        
+        for img in all_images:
+            # 检查文件名是否有有效扩展名
+            filename = img.filename
+            name, ext = os.path.splitext(filename)
+            
+            if not ext or ext.lower() not in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']:
+                # 尝试从原始文件名获取扩展名
+                _, orig_ext = os.path.splitext(img.original_filename)
+                
+                if orig_ext:
+                    # 重命名文件添加正确扩展名
+                    new_filename = name + orig_ext.lower()
+                    old_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    new_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+                    
+                    if os.path.exists(old_path):
+                        os.rename(old_path, new_path)
+                        img.filename = new_filename
+                        fixed += 1
+        
+        if fixed > 0:
+            db.session.commit()
+            
+        return jsonify({
+            'success': True,
+            'fixed_count': fixed,
+            'total_images': len(all_images)
+        })
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

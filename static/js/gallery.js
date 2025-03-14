@@ -134,33 +134,65 @@ function checkForSelectedImages() {
 function setupImageSelectors() {
     const selectAllBtn = document.getElementById('select-all-btn');
     const imageSelectors = document.querySelectorAll('.image-selector');
+    const batchDeleteBtn = document.getElementById('batch-delete-btn');
+    const downloadUrlsBtn = document.getElementById('download-urls-btn');
     
-    logger.debug('找到的元素:', {
+    console.log('找到的元素:', {
         selectAllBtn: !!selectAllBtn,
-        imageSelectors: imageSelectors.length
+        imageSelectors: imageSelectors.length,
+        batchDeleteBtn: !!batchDeleteBtn,
+        downloadUrlsBtn: !!downloadUrlsBtn
     });
 
+    // 为所有图片选择器添加事件
+    imageSelectors.forEach(selector => {
+        selector.addEventListener('change', function() {
+            updateImageSelection(this);
+            updateButtons();
+        });
+        
+        // 添加点击事件到整个卡片
+        const card = selector.closest('.card');
+        if (card) {
+            card.addEventListener('click', function(e) {
+                // 如果点击的不是复选框本身和卡片内的按钮
+                if (!e.target.classList.contains('image-selector') && 
+                    !e.target.classList.contains('btn') &&
+                    !e.target.closest('.btn')) {
+                    // 切换复选框状态
+                    selector.checked = !selector.checked;
+                    updateImageSelection(selector);
+                    updateButtons();
+                }
+            });
+        }
+    });
+
+    // 全选按钮
     if (selectAllBtn) {
-        selectAllBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            logger.debug('全选按钮被点击');
-            const isSelectAll = this.textContent.trim() === '全选';
+        selectAllBtn.addEventListener('click', function() {
+            const isAnyUnchecked = Array.from(imageSelectors).some(checkbox => !checkbox.checked);
+            
             imageSelectors.forEach(checkbox => {
-                checkbox.checked = isSelectAll;
+                checkbox.checked = isAnyUnchecked;
                 updateImageSelection(checkbox);
             });
-            this.textContent = isSelectAll ? '取消全选' : '全选';
-            updateDownloadButton();
+            
+            updateButtons();
         });
     }
-
-    imageSelectors.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            logger.debug('图片选择状态改变:', this.checked);
-            updateImageSelection(this);
-            updateDownloadButton();
-        });
-    });
+    
+    function updateButtons() {
+        const checkedCount = document.querySelectorAll('.image-selector:checked').length;
+        
+        if (batchDeleteBtn) {
+            batchDeleteBtn.disabled = checkedCount === 0;
+        }
+        
+        if (downloadUrlsBtn) {
+            downloadUrlsBtn.disabled = checkedCount === 0;
+        }
+    }
 }
 
 function setupDeleteButtons() {

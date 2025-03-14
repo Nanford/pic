@@ -30,7 +30,8 @@
                      data-full-image="{{ image.url }}" 
                      alt="{{ image.original_filename }}"
                      loading="lazy"
-                     width="200" height="150">
+                     width="200" height="150"
+                     onerror="this.onerror=null; this.src='{{ image.url }}'; this.classList.add('loading-original');">
                 <div class="card-body">
                     <h5 class="card-title text-truncate" title="{{ image.filename }}">{{ image.filename }}</h5>
                     <p class="card-text">
@@ -254,6 +255,49 @@
         padding: 20px;
         border-radius: 5px;
         text-align: center;
+    }
+
+    /* 加载原图时的样式 */
+    .loading-original {
+        opacity: 0.3;
+        transition: opacity 1s;
+    }
+    
+    .loading-original.loaded {
+        opacity: 1;
+    }
+
+    /* 重新设计复选框容器位置 */
+    .image-selector-container {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        z-index: 100;
+        background-color: rgba(255, 255, 255, 0.9); /* 更明显的白色背景 */
+        border-radius: 4px; /* 方形圆角 */
+        padding: 3px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 添加阴影增加可见性 */
+        border: 1px solid #dee2e6; /* 添加边框 */
+    }
+    
+    /* 优化复选框样式 */
+    .form-check-input.image-selector {
+        margin: 0;
+        width: 20px; /* 增加尺寸 */
+        height: 20px; /* 增加尺寸 */
+        cursor: pointer;
+        border: 2px solid #6c757d; /* 更明显的边框 */
+    }
+    
+    /* 选中状态更明显 */
+    .form-check-input.image-selector:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    /* 卡片选中样式 */
+    .card.selected {
+        box-shadow: 0 0 0 3px #0d6efd; /* 添加蓝色边框标识选中状态 */
     }
 </style>
 {% endblock %}
