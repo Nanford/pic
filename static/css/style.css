@@ -1,0 +1,140 @@
+/* 全局样式 */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* 上传区域样式 */
+.dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.dropzone.active {
+    border-color: #0d6efd;
+    background-color: #e9f0ff;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.placeholder {
+    text-align: center;
+    padding: 20px;
+}
+
+.placeholder-content {
+    color: #6c757d;
+}
+
+/* 图片预览样式 */
+.image-preview {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.image-preview .remove-image {
+    position: absolute;
+    top: 5px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #dc3545;
+}
+
+.image-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* 图库样式 */
+.gallery-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.image-checkbox {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+}
+
+.image-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.card {
+    transition: transform 0.2s;
+    position: relative;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+    border-bottom: 1px solid #eee;
+}
+
+.card-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.card-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.selected {
+    outline: 3px solid #0d6efd;
+}
+
+/* 复制按钮样式 */
+.copy-url {
+    cursor: pointer;
+}
+
+.copy-url:hover {
+    color: #0d6efd;
+}
